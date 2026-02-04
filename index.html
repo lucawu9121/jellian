@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>For Jellian 💌</title>
+
+
+<!-- Confetti -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+<!-- Handwritten Font -->
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+
+<style>
+
+body {
+  margin: 0;
+  height: 100vh;
+  background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+  font-family: "Segoe UI", sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+/* ================= ENVELOPE SCREEN ================= */
+
+#envelopeScreen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Envelope */
+.envelope {
+  width: 320px;
+  height: 210px;
+  background: #ffe6ec;
+  position: relative;
+  border-radius: 10px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+  cursor: pointer;
+  overflow: visible;
+}
+
+/* Flap */
+.flap {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  height: 50%;
+  background: #ffccd9;
+  clip-path: polygon(0 0, 50% 100%, 100% 0);
+  transform-origin: top;
+  transition: 0.8s;
+  z-index: 4;
+}
+
+.envelope.open .flap {
+  transform: rotateX(180deg);
+}
+
+/* Letter (ON TOP) */
+.letter {
+  position: absolute;
+  width: 90%;
+  height: 150px;
+  background: #fff;
+  top: 25px;
+  left: 5%;
+  border-radius: 10px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  padding: 15px;
+  box-sizing: border-box;
+  text-align: center;
+
+  font-family: 'Pacifico', cursive;
+  color: #ff2d78;
+  font-size: 18px;
+  line-height: 1.4;
+
+  transform: translateY(60px);
+  opacity: 0;
+  transition: 1s ease;
+  z-index: 5;
+}
+
+.envelope.open .letter {
+  transform: translateY(-110px);
+  opacity: 1;
+}
+
+/* Seal */
+.seal {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #ff2d78;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  color: white;
+  font-size: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 5;
+}
+
+button {
+  transition: opacity 0.4s ease, transform 0.3s ease;
+}
+
+/* To / From */
+.text {
+  position: absolute;
+  width: 100%;
+  text-align: center;
+
+  /* Move BELOW seal */
+  top: 65%;
+
+  font-weight: bold;
+  color: #ff2d78;
+  z-index: 7;
+}
+
+.from {
+  top: calc(65% + 22px);
+  bottom: auto;
+}
+
+/* Continue Text */
+.continue {
+  margin-top: 30px;
+  text-align: center;
+  font-size: 16px;
+  color: #ff2d78;
+  font-weight: bold;
+  opacity: 0;
+  transition: 0.6s;
+}
+
+.continue.show {
+  opacity: 1;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+
+/* Floating Hearts */
+.heart {
+  position: fixed;
+  bottom: -20px;
+  font-size: 18px;
+  opacity: 0.7;
+  pointer-events: none;
+  animation: floatUp linear forwards;
+  z-index: 0;
+}
+
+@keyframes floatUp {
+  from {
+    transform: translateY(0) scale(1);
+    opacity: 0.8;
+  }
+  to {
+    transform: translateY(-110vh) scale(1.6);
+    opacity: 0;
+  }
+}
+
+/* Screen Transitions */
+.fade-out {
+  animation: fadeOut 0.8s forwards;
+}
+
+.fade-in {
+  animation: fadeIn 0.8s forwards;
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(1.05);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Result Animation */
+.pop-in {
+  animation: popIn 0.7s ease-out forwards;
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ================= MAIN SCREEN ================= */
+
+#mainScreen {
+  display: none;
+}
+
+.card {
+  background: white;
+  padding: 30px 25px;
+  border-radius: 25px;
+  width: min(420px, 90%);
+  text-align: center;
+  box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+}
+
+h1 {
+  font-size: 36px;
+  color: #ff2d78;
+  margin-bottom: 15px;
+}
+
+img {
+  width: 220px;
+  border-radius: 15px;
+  margin-bottom: 15px;
+}
+
+.buttons {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+button {
+  font-size: 18px;
+  padding: 12px 22px;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+}
+
+.yes {
+  background: #ff2d78;
+  color: white;
+}
+
+.no {
+  background: #eee;
+}
+
+.shake {
+  animation: shake 0.4s;
+}
+
+@keyframes shake {
+  0% {transform: translateX(0);}
+  25% {transform: translateX(-6px);}
+  50% {transform: translateX(6px);}
+  75% {transform: translateX(-6px);}
+  100% {transform: translateX(0);}
+}
+
+.result {
+  display: none;
+  margin-top: 15px;
+}
+
+.result h2 {
+  color: #ff2d78;
+}
+
+/* Toast */
+.toast {
+  position: fixed;
+  right: -320px;
+  top: 25px;
+  background: #ff2d78;
+  color: white;
+  padding: 14px 18px;
+  border-radius: 12px 0 0 12px;
+  min-width: 260px;
+  transition: 0.4s;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+}
+
+.toast.show {
+  right: 0;
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- Music -->
+<audio id="music" loop preload="auto">
+  <source src="music.mp3" type="audio/mpeg">
+</audio>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+❌ Wrong Answer! Try again 😤💔
+</div>
+
+<!-- Envelope Screen -->
+<div id="envelopeScreen">
+
+  <div style="text-align:center">
+
+    <div class="envelope" id="envelope">
+
+      <div class="flap"></div>
+
+      <!-- Letter -->
+      <div class="letter">
+        I made this letter for you 💕<br><br>
+        You mean everything to me ❤️<br>
+        I love you Jellian 😘
+      </div>
+
+      <div class="text">To: Jellian ❤️</div>
+      <div class="text from">From: Your Luca 💖</div>
+
+      <div class="seal">💗</div>
+
+    </div>
+
+    <!-- Continue -->
+    <div class="continue" id="continueText">
+        💕 Click the Envelope to Continue 💕
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- Main Screen -->
+<div id="mainScreen">
+
+  <div class="card">
+
+    <h1>Jellian 💖<br>Will you be my Valentine?</h1>
+
+    <img src="https://media.giphy.com/media/26BRv0ThflsHCqDrG/giphy.gif"/>
+
+    <div class="buttons">
+      <button class="yes" id="yesBtn">Yes 😍</button>
+      <button class="no" id="noBtn">No 🙃</button>
+    </div>
+
+    <div class="result" id="result">
+
+      <h2>YAYYY!! 🥰💘</h2>
+
+      <img src="https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif"/>
+
+      <p>
+        I love you so much, Jellian ❤️<br>
+        Thank you for being my Valentine 💕<br>
+        You’re mine 😘
+      </p>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<script>
+
+const envelope = document.getElementById("envelope");
+const envelopeScreen = document.getElementById("envelopeScreen");
+const mainScreen = document.getElementById("mainScreen");
+const continueText = document.getElementById("continueText");
+
+const yesBtn = document.getElementById("yesBtn");
+const noBtn = document.getElementById("noBtn");
+const result = document.getElementById("result");
+
+const toast = document.getElementById("toast");
+const music = document.getElementById("music");
+
+let audioUnlocked = false;
+
+function unlockAudio() {
+  if (!audioUnlocked) {
+    music.muted = false;
+    music.volume = 0.3;
+
+    music.play().then(() => {
+      audioUnlocked = true;
+    }).catch(() => {});
+  }
+}
+
+document.addEventListener("click", unlockAudio);
+document.addEventListener("touchstart", unlockAudio);
+
+let opened = false;
+
+// Open envelope first
+envelope.addEventListener("click", ()=>{
+
+if(!opened){
+
+    music.volume = 0.7;
+    music.muted = false;
+    music.play().catch(()=>{});
+
+  envelope.classList.add("open");
+  opened = true;
+
+  setTimeout(()=>{
+    continueText.classList.add("show");
+  },1200);
+
+} else {
+
+  // Smooth transition to main screen
+  envelopeScreen.classList.add("fade-out");
+
+  setTimeout(()=>{
+
+    envelopeScreen.style.display = "none";
+    mainScreen.style.display = "block";
+    mainScreen.classList.add("fade-in");
+
+  },700);
+}
+
+});
+
+function showToast(){
+  toast.classList.add("show");
+  setTimeout(()=>{
+    toast.classList.remove("show");
+  },2200);
+}
+
+// NO
+noBtn.addEventListener("click", ()=>{
+
+  noBtn.classList.add("shake");
+
+  setTimeout(()=>{
+    noBtn.classList.remove("shake");
+  },400);
+
+  showToast();
+});
+
+// YES
+yesBtn.addEventListener("click", ()=>{
+
+// Hide buttons smoothly
+yesBtn.style.opacity = "0";
+noBtn.style.opacity = "0";
+
+yesBtn.style.transform = "scale(0.9)";
+noBtn.style.transform = "scale(0.9)";
+
+setTimeout(()=>{
+
+  yesBtn.style.display = "none";
+  noBtn.style.display = "none";
+
+  result.style.display = "block";
+  result.classList.add("pop-in");
+
+  // Confetti
+  confetti({
+    particleCount: 200,
+    spread: 90,
+    origin: { y: 0.6 }
+  });
+
+  setTimeout(()=>{
+    confetti({
+      particleCount: 150,
+      spread: 120,
+      origin: { y: 0.4 }
+    });
+  },600);
+
+},300);
+
+});
+
+// Floating hearts background
+function createHeart() {
+
+const heart = document.createElement("div");
+heart.className = "heart";
+
+const hearts = ["💖","💕","💗","💓","💘","❤️"];
+
+heart.textContent = hearts[Math.floor(Math.random() * hearts.length)];
+
+heart.style.left = Math.random() * 100 + "vw";
+
+heart.style.animationDuration = (4 + Math.random() * 4) + "s";
+
+heart.style.fontSize = (16 + Math.random() * 18) + "px";
+
+document.body.appendChild(heart);
+
+setTimeout(() => {
+  heart.remove();
+}, 8000);
+}
+
+// Create hearts every 500ms
+setInterval(createHeart, 700);
+
+</script>
+
+</body>
+</html>
